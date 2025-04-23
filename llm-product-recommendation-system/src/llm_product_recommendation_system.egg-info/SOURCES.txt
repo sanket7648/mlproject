@@ -1,0 +1,11 @@
+README.md
+setup.py
+src/llm_product_recommendation_system.egg-info/PKG-INFO
+src/llm_product_recommendation_system.egg-info/SOURCES.txt
+src/llm_product_recommendation_system.egg-info/dependency_links.txt
+src/llm_product_recommendation_system.egg-info/top_level.txt
+tests/test_auth.py
+tests/test_feedback.py
+tests/test_recommendations.py
+tests/test_search.py
+tests/test_services.py

@@ -1,29 +1,24 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from typing import List
-from src.services.database import save_feedback
-from src.models.feedback import Feedback as FeedbackModel
+from src.services.feedback_service import save_feedback  # Updated import
+from src.models.feedback import FeedbackModel
 
 router = APIRouter()
 
-class Feedback(BaseModel):
-    user_id: int
-    product_id: int
-    rating: int
-    comments: str
-
 @router.post("/feedback/", response_model=FeedbackModel)
-async def submit_feedback(feedback: Feedback):
-    try:
-        saved_feedback = await save_feedback(feedback)
-        return saved_feedback
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+async def create_feedback(user_id: int, product_id: int, feedback_text: str):
+    """
+    Create a new feedback entry.
 
-@router.get("/feedback/{user_id}", response_model=List[FeedbackModel])
-async def get_user_feedback(user_id: int):
+    Args:
+        user_id (int): The ID of the user providing feedback.
+        product_id (int): The ID of the product being reviewed.
+        feedback_text (str): The feedback text.
+
+    Returns:
+        FeedbackModel: The created feedback entry.
+    """
     try:
-        feedback_list = await get_feedback_by_user(user_id)
-        return feedback_list
+        feedback = save_feedback(user_id, product_id, feedback_text)
+        return feedback
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Error saving feedback: {e}")

@@ -1,13 +1,10 @@
 # filepath: src/services/llm_engine.py
-from dotenv import load_dotenv
-import os
-import openai
+import torch
+from transformers import AutoTokenizer, AutoModel
 
-# Load environment variables from .env
-load_dotenv()
-
-# Set the OpenAI API key
-openai.api_key = os.getenv("LLM_API_KEY")
+# Load BERT model and tokenizer
+tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+model = AutoModel.from_pretrained("bert-base-uncased")
 
 def get_recommendations(user_preferences, product_descriptions):
     """
@@ -21,29 +18,42 @@ def get_recommendations(user_preferences, product_descriptions):
         list: A list of recommended products.
     """
     try:
-        # Example prompt for the LLM
-        prompt = f"""
-        Based on the following user preferences:
-        {user_preferences}
-
-        Recommend the best products from the following list:
-        {', '.join(product_descriptions)}
-        """
-
-        # Use the new ChatCompletion API with gpt-3.5-turbo or gpt-4
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",  # Replace with "gpt-4" if needed
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": prompt},
-            ],
-            max_tokens=150,
-            temperature=0.7,
+        # Tokenize and encode user preferences
+        user_inputs = tokenizer(
+            user_preferences,
+            padding=True,
+            truncation=True,
+            return_tensors="pt",
         )
+        user_embedding = model(**user_inputs).last_hidden_state.mean(dim=1)
 
-        # Extract recommendations from the response
-        recommendations = response["choices"][0]["message"]["content"].strip().split("\n")
-        return recommendations
+        # Compute embeddings for each product description
+        product_embeddings = []
+        for description in product_descriptions:
+            product_inputs = tokenizer(
+                description,
+                padding=True,
+                truncation=True,
+                return_tensors="pt",
+            )
+            product_embedding = model(**product_inputs).last_hidden_state.mean(dim=1)
+            product_embeddings.append(product_embedding)
+
+        # Compute cosine similarity between user preferences and product descriptions
+        similarities = [
+            torch.nn.functional.cosine_similarity(user_embedding, product_embedding).item()
+            for product_embedding in product_embeddings
+        ]
+
+        # Sort products by similarity
+        sorted_products = [
+            product
+            for _, product in sorted(
+                zip(similarities, product_descriptions), reverse=True
+            )
+        ]
+
+        return sorted_products
 
     except Exception as e:
         print(f"Error generating recommendations: {e}")

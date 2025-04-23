@@ -4,6 +4,9 @@ from src.api.auth import register_user, login_user
 from src.models.user import User
 from src.services.database import get_user_by_username, create_user
 
+import sys
+print("sys.path:", sys.path)
+
 app = FastAPI()
 client = TestClient(app)
 

@@ -1,11 +1,10 @@
 # filepath: src/models/user.py
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
-from src.services.database import Base
+from src.models.base import Base  # Import Base from the new file
 
 class User(Base):
     __tablename__ = "users"
-    __table_args__ = {"schema": "my_schema"}  # Specify the schema
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, nullable=False)

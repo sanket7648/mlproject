@@ -1,21 +1,22 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
 from src.services.llm_engine import get_recommendations
-from services.database import get_user_preferences
 
 router = APIRouter()
 
-class RecommendationRequest(BaseModel):
-    user_id: int
+@router.post("/recommendations/")
+async def generate_recommendations(user_preferences: str, product_descriptions: list[str]):
+    """
+    Generate product recommendations based on user preferences and product descriptions.
 
-class RecommendationResponse(BaseModel):
-    recommendations: list
+    Args:
+        user_preferences (str): A description of the user's preferences.
+        product_descriptions (list): A list of product descriptions.
 
-@router.post("/recommendations", response_model=RecommendationResponse)
-async def generate_recommendations(request: RecommendationRequest):
-    user_preferences = await get_user_preferences(request.user_id)
-    if not user_preferences:
-        raise HTTPException(status_code=404, detail="User preferences not found")
-    
-    recommendations = await get_recommendations(user_preferences)
-    return RecommendationResponse(recommendations=recommendations)
+    Returns:
+        list: A list of recommended products.
+    """
+    try:
+        recommendations = get_recommendations(user_preferences, product_descriptions)
+        return {"recommendations": recommendations}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating recommendations: {e}")

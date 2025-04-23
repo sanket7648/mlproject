@@ -14,7 +14,7 @@ app.add_middleware(
 )
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
-app.include_router(recommendations.router, prefix="/recommendations", tags=["recommendations"])
+app.include_router(recommendations.router, prefix="/api", tags=["recommendations"])
 app.include_router(feedback.router, prefix="/feedback", tags=["feedback"])
 app.include_router(search.router, prefix="/search", tags=["search"])
 
