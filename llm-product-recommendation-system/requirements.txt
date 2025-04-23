@@ -1,0 +1,11 @@
+FastAPI
+SQLAlchemy
+pydantic
+uvicorn
+transformers
+torch
+scikit-learn
+python-dotenv
+redis
+pytest
+httpx
